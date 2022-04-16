@@ -35,12 +35,13 @@ class BookingController extends Controller
      */
     public function index(Request $request)
     {
+        $response = [];
         if($user_id = $request->get('user_id')) {
 
             $response = $this->repository->getUsersJobs($user_id);
 
         }
-        elseif($request->__authenticatedUser->user_type == env('ADMIN_ROLE_ID') || $request->__authenticatedUser->user_type == env('SUPERADMIN_ROLE_ID'))
+        elseif($request->__authenticatedUser->user_type == $this->repository->ADMIN_ROLE_ID || $request->__authenticatedUser->user_type == $this->repository->SUPERADMIN_ROLE_ID)
         {
             $response = $this->repository->getAll($request);
         }
@@ -105,68 +106,49 @@ class BookingController extends Controller
      * @param Request $request
      * @return mixed
      */
-    public function getHistory(Request $request)
+    public function getHistory($user_id, Request $request)
     {
+        $response = null;
         if($user_id = $request->get('user_id')) {
 
             $response = $this->repository->getUsersJobsHistory($user_id, $request);
             return response($response);
         }
 
-        return null;
+        return response($response);
     }
 
+    // Acc, Cancel, End jadiin satu
     /**
      * @param Request $request
      * @return mixed
      */
-    public function acceptJob(Request $request)
+    public function jobAction(Request $request)
     {
-        $data = $request->all();
-        $user = $request->__authenticatedUser;
-
-        $response = $this->repository->acceptJob($data, $user);
-
-        return response($response);
-    }
-
-    public function acceptJobWithId(Request $request)
-    {
-        $data = $request->get('job_id');
-        $user = $request->__authenticatedUser;
-
-        $response = $this->repository->acceptJobWithId($data, $user);
-
-        return response($response);
-    }
-
-    /**
-     * @param Request $request
-     * @return mixed
-     */
-    public function cancelJob(Request $request)
-    {
-        $data = $request->all();
-        $user = $request->__authenticatedUser;
-
-        $response = $this->repository->cancelJobAjax($data, $user);
-
-        return response($response);
-    }
-
-    /**
-     * @param Request $request
-     * @return mixed
-     */
-    public function endJob(Request $request)
-    {
+        $action = $request->action;
+        $response = null;
+        $user = null;
         $data = $request->all();
 
-        $response = $this->repository->endJob($data);
+        if (isset($request->__autheticatedUser) {
+            $user = $request->__authenticatedUser;
+        }
+
+        if ($action == 'acceptJob') {
+            $response = $this->repository->acceptJob($data, $user);
+        } elseif ($action == 'acceptJobWithId') {
+            $response = $this->repository->acceptJobWithId($data, $user);
+        } elseif ($action == 'cancelJob') {
+            $response = $this->repository->cancelJobAjax($data, $user);
+        } elseif ($action == 'endJob') {
+            $response = $this->repository->endJob($data);
+        } elseif ($action == 'getPotentialJobs') {
+            $response = $this->repository->getPotentialJobs($user);
+        }
 
         return response($response);
-
     }
+
 
     public function customerNotCall(Request $request)
     {
@@ -176,20 +158,6 @@ class BookingController extends Controller
 
         return response($response);
 
-    }
-
-    /**
-     * @param Request $request
-     * @return mixed
-     */
-    public function getPotentialJobs(Request $request)
-    {
-        $data = $request->all();
-        $user = $request->__authenticatedUser;
-
-        $response = $this->repository->getPotentialJobs($user);
-
-        return response($response);
     }
 
     public function distanceFeed(Request $request)
